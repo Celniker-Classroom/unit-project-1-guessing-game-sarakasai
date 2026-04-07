@@ -17,9 +17,19 @@ document.getElementById("playBtn").addEventListener("click", function() {
             range = parseInt(radios[i].value);
       }
     }
+ //round setup
+answer = Math.floor(Math.random() * range) + 1;
+//disable buttons and radio choices
+document.getElementById("msg").textContent = playerName + ", guess a number between 1 and " + range;
+document.getElementById("guess").value = "";
+document.getElementById("guessBtn").disabled = false;
+document.getElementById("giveUpBtn").disabled = false;
+document.getElementById("playBtn").disabled = true;
+
+let levelRadios = document.getElementsByName("level");
+ for (let i=0; i<levelRadios.length; i++) {
+        levelRadios[i].disabled = true;
+      }
 });
 
-//round setup
-answer = Math.floor(Math.random() * range) + 1;
 
-document.getElementById("msg").textContent = playerName + ", guess a number between 1 and " + range;
