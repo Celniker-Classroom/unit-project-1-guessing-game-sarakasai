@@ -1,40 +1,70 @@
-//game state
+// game state
 let answer = 0;
 let guessCount = 0;
 let totalWins = 0;
 let totalGuesses = 0;
-let scores = 0;
+let scores = []; 
+let range = 3; 
 
-//player name
-let playerName = prompt("Enter your name");
-//play
-//get level difficulty
-document.getElementById("playBtn").addEventListener("click", function() {
-    let radios = document.getElementsByName("level");
-    let range = 3;
-    for (let i=0; i<radios.length; i++) {
-        if (radios[i].checked) {
-            range = parseInt(radios[i].value);
-      }
+// timer variables
+let startTime = 0;
+let totalTime = 0;
+let fastestTime = Infinity;
+
+// player name
+let rawName = prompt("Enter your name");
+let playerName = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
+
+// time and date
+function time() {
+  let d = new Date();
+  let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  let month = months[d.getMonth()];
+  let date = d.getDate();
+  let year = d.getFullYear();
+
+  // day suffixes
+  let suffix = "th";
+  if (date % 10 === 1 && date !== 11) suffix = "st";
+  else if (date % 10 === 2 && date !== 12) suffix = "nd";
+  else if (date % 10 === 3 && date !== 13) suffix = "rd";
+
+  let timeStr = d.toLocaleTimeString(); 
+  document.getElementById("date").textContent = month + " " + date + suffix + ", " + year + " - " + timeStr;
+}
+setInterval(time, 1000);
+time();
+
+// play button
+function play() {
+  let radios = document.getElementsByName("level");
+  range = 3; 
+  for (let i = 0; i < radios.length; i++) {
+    if (radios[i].checked) {
+      range = parseInt(radios[i].value);
     }
- //round setup
-answer = Math.floor(Math.random() * range) + 1;
-guessCount = 0; //reset guess count for new round
-//disable buttons and radio choices
-document.getElementById("msg").textContent = playerName + ", guess a number between 1 and " + range;
-document.getElementById("guess").value = "";
-document.getElementById("guessBtn").disabled = false;
-document.getElementById("giveUpBtn").disabled = false;
-document.getElementById("playBtn").disabled = true;
+  }
+  
+  // round setup
+  answer = Math.floor(Math.random() * range) + 1;
+  guessCount = 0; 
+  startTime = new Date().getTime(); 
 
-let levelRadios = document.getElementsByName("level");
- for (let i=0; i<levelRadios.length; i++) {
-        levelRadios[i].disabled = true;
-      }
-});
+  // disable buttons and radio choices
+  document.getElementById("msg").textContent = playerName + ", guess a number between 1 and " + range;
+  document.getElementById("guess").value = "";
+  document.getElementById("guessBtn").disabled = false;
+  document.getElementById("giveUpBtn").disabled = false;
+  document.getElementById("playBtn").disabled = true;
 
-//guessing
-document.getElementById("guessBtn").addEventListener("click", function() {
+  let levelRadios = document.getElementsByName("level");
+  for (let i = 0; i < levelRadios.length; i++) {
+    levelRadios[i].disabled = true;
+  }
+}
+
+// guessing
+function makeGuess() {
   let input = document.getElementById("guess").value;
   let num = parseInt(input);
 
@@ -46,15 +76,14 @@ document.getElementById("guessBtn").addEventListener("click", function() {
   guessCount = guessCount + 1;
   let diff = Math.abs(num - answer);
 
-  //correct
+  // correct
   if (num === answer) {
-    document.getElementById("msg").textContent = "Correct!" + playerName + " got it in '" + guessCount + "' guesses!";
-     updateScore(guessCount);
-  resetButtons(); //stop guess/give up restart play
+    document.getElementById("msg").textContent = "Correct! " + playerName + " got it in '" + guessCount + "' guesses!";
+    updateScore(guessCount);
+    updateTimers(new Date().getTime()); 
+    reset(); 
   }
-
-
-  //higher 
+  // higher 
   else if (num > answer) {
     let temp = "";
     if (diff <= 2) {
@@ -66,7 +95,7 @@ document.getElementById("guessBtn").addEventListener("click", function() {
     }
     document.getElementById("msg").textContent = "Too high. " + temp;
   }
-  //lower
+  // lower
   else {
     let temp = "";
     if (diff <= 2) {
@@ -78,39 +107,66 @@ document.getElementById("guessBtn").addEventListener("click", function() {
     }
     document.getElementById("msg").textContent = "Too low. " + temp;
   }
-});
+}
 
-//update score when win
+// give up
+function giveUp() {
+  document.getElementById("msg").textContent = playerName + " gave up! The answer was " + answer;
+  updateScore(range); 
+  updateTimers(new Date().getTime());
+  reset();
+}
+
+// update score
 function updateScore(score) {
   totalWins = totalWins + 1;
   totalGuesses = totalGuesses + score;
-  //score for round and total wins/avg score
+  
+  // score for round and total wins/avg score
   document.getElementById("wins").textContent = "Total wins: " + totalWins;
   document.getElementById("avgScore").textContent = "Average Score: " + (totalGuesses / totalWins).toFixed(1);
 
-  //update leaderboard
+  // update leaderboard
   scores.push(score);
-  scores.sort(function(a, b) { return a - b; }); //sort scores ascending
+  scores.sort(function(a, b) { return a - b; }); 
 
-  let leaderboard = document.getElementByName("leaderboard");
+  let leaderboard = document.getElementsByName("leaderboard"); 
   for (let i = 0; i < leaderboard.length; i++) {
     if (i < scores.length) {
       leaderboard[i].textContent = scores[i];
-    }
-    else {
+    } else {
       leaderboard[i].textContent = "--";
     }
+  }
 }
+
+// update timers
+function updateTimers(endMs) {
+  let elapsedSec = (endMs - startTime) / 1000;
+  
+  if (elapsedSec < fastestTime) {
+    fastestTime = elapsedSec;
+    document.getElementById("fastest").textContent = "Fastest Game: " + fastestTime.toFixed(2);
+  }
+  
+  totalTime += elapsedSec;
+  document.getElementById("avgTime").textContent = "Average Time: " + (totalTime / scores.length).toFixed(2);
 }
-//reset buttons
-function resetButtons() {
+
+// reset logic
+function reset() {
   document.getElementById("guessBtn").disabled = true;
   document.getElementById("giveUpBtn").disabled = true;
   document.getElementById("playBtn").disabled = false;
 
-  //diable radio level selection
+  // disable radio level selection
   let radios = document.getElementsByName("level");
   for (let i = 0; i < radios.length; i++) {
     radios[i].disabled = false;
   }
 }
+
+// event listeners
+document.getElementById("playBtn").addEventListener("click", play);
+document.getElementById("guessBtn").addEventListener("click", makeGuess);
+document.getElementById("giveUpBtn").addEventListener("click", giveUp);
