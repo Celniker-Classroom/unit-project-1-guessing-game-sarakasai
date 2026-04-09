@@ -170,3 +170,26 @@ function reset() {
 document.getElementById("playBtn").addEventListener("click", play);
 document.getElementById("guessBtn").addEventListener("click", makeGuess);
 document.getElementById("giveUpBtn").addEventListener("click", giveUp);
+
+//above and beyond
+
+// correct
+  if (num === answer) {
+    let quality = "";
+    if (guessCount <= 2) quality = " Amazing!";
+    else if (guessCount <= 5) quality = " Good job!";
+    else quality = " Needs work!";
+
+    document.getElementById("msg").textContent = "Correct! " + playerName + " got it in '" + guessCount + "' guesses!" + quality;
+    updateScore(guessCount);
+    updateTimers(new Date().getTime()); 
+    reset(); 
+  }
+
+  // enter key support
+document.getElementById("guess").addEventListener("keypress", function(event) {
+  if (event.key === "Enter" && document.getElementById("guessBtn").disabled === false) {
+    event.preventDefault();
+    makeGuess();
+  }
+});
