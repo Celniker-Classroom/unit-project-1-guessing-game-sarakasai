@@ -13,6 +13,8 @@ let fastestTime = Infinity;
 
 // player name
 let rawName = prompt("Enter your name");
+// Fallback just in case you hit cancel on the prompt
+if (!rawName) rawName = "Player"; 
 let playerName = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
 
 // time and date
@@ -35,7 +37,7 @@ function time() {
 setInterval(time, 1000);
 time();
 
-// play button
+// play button logic
 function play() {
   let radios = document.getElementsByName("level");
   range = 3; 
@@ -61,15 +63,20 @@ function play() {
   for (let i = 0; i < levelRadios.length; i++) {
     levelRadios[i].disabled = true;
   }
+  
+  // auto focus on the input box so you can start typing immediately
+  document.getElementById("guess").focus();
 }
 
-// guessing
+// guessing logic
 function makeGuess() {
   let input = document.getElementById("guess").value;
   let num = parseInt(input);
 
+  // input validation
   if (isNaN(num)) {
     document.getElementById("msg").textContent = "Please enter a valid number!";
+    document.getElementById("guess").value = "";
     return;
   }
 
@@ -78,7 +85,13 @@ function makeGuess() {
 
   // correct
   if (num === answer) {
-    document.getElementById("msg").textContent = "Correct! " + playerName + " got it in '" + guessCount + "' guesses!";
+    // score quality feedback
+    let quality = "";
+    if (guessCount <= 2) quality = " Amazing!";
+    else if (guessCount <= 5) quality = " Good job!";
+    else quality = " Needs work!";
+
+    document.getElementById("msg").textContent = "Correct! " + playerName + " got it in '" + guessCount + "' guesses!" + quality;
     updateScore(guessCount);
     updateTimers(new Date().getTime()); 
     reset(); 
@@ -107,9 +120,13 @@ function makeGuess() {
     }
     document.getElementById("msg").textContent = "Too low. " + temp;
   }
+  
+  // Clear the input box so it's empty for the next guess
+  document.getElementById("guess").value = "";
+  document.getElementById("guess").focus();
 }
 
-// give up
+// give up 
 function giveUp() {
   document.getElementById("msg").textContent = playerName + " gave up! The answer was " + answer;
   updateScore(range); 
@@ -117,7 +134,7 @@ function giveUp() {
   reset();
 }
 
-// update score
+// update score 
 function updateScore(score) {
   totalWins = totalWins + 1;
   totalGuesses = totalGuesses + score;
@@ -153,7 +170,7 @@ function updateTimers(endMs) {
   document.getElementById("avgTime").textContent = "Average Time: " + (totalTime / scores.length).toFixed(2);
 }
 
-// reset logic
+// reset 
 function reset() {
   document.getElementById("guessBtn").disabled = true;
   document.getElementById("giveUpBtn").disabled = true;
@@ -171,25 +188,10 @@ document.getElementById("playBtn").addEventListener("click", play);
 document.getElementById("guessBtn").addEventListener("click", makeGuess);
 document.getElementById("giveUpBtn").addEventListener("click", giveUp);
 
-//above and beyond
-
-// correct
-  if (num === answer) {
-    let quality = "";
-    if (guessCount <= 2) quality = " Amazing!";
-    else if (guessCount <= 5) quality = " Good job!";
-    else quality = " Needs work!";
-
-    document.getElementById("msg").textContent = "Correct! " + playerName + " got it in '" + guessCount + "' guesses!" + quality;
-    updateScore(guessCount);
-    updateTimers(new Date().getTime()); 
-    reset(); 
-  }
-
-  // enter key support
+// enter key
 document.getElementById("guess").addEventListener("keypress", function(event) {
   if (event.key === "Enter" && document.getElementById("guessBtn").disabled === false) {
-    event.preventDefault();
+    event.preventDefault(); // Prevents page reload issues
     makeGuess();
   }
 });

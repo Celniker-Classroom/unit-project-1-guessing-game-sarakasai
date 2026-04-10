@@ -1,4 +1,4 @@
-# Above and Beyond Features
+Above and Beyond Features
 
 # 1. Keyboard Support (Enter Key to Guess)
 at the very bottom with the other event listeners. creates a smoother and faster user experience. Players can just type their number and hit Enter on their keyboard instead of having to move their mouse to click the Guess button every single round.
